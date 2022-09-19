@@ -1,6 +1,7 @@
 # YandexSHRItasks
 Yandex internships
 Задача 1 
+
 – Тема: базовый JS
 – Низкий уровень сложности
 Задача 2 
