@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Почта с тегами</title>
+<meta charset='utf-8'>
+<style>
+  .Page {
+    font-family: Arial;
+    font-size: 12px;
+    margin: 0;
+    padding: 0;
+    color: #2f2d33;
+  }
+  .Logo {
+    font-size: 24px;
+    padding: 12px;
+    margin: 0;
+  }
+  .Main {
+    display: flex;
+  }
+  .Tags {
+    width: 25%;
+    background-color: #fffae5;
+    padding: 6px;
+  }
+  .Tags_dropzone {
+    background-color: #ffedba;
+  }
+  .Tags_dragovered {
+    background-color: #ffd98e;
+  }
+  .Tags_dragovered * {
+    pointer-events: none;
+  }
+  .Tag {
+    background-color: #ffc062;
+    color: #592400;
+    margin: 6px;
+    padding: 6px;
+    display: inline-block;
+  }
+  .Tag_dragged {
+    background-color: #ff9100;
+  }
+  .Tag_removed {
+    display: none;
+  }
+  .Letters {
+    width: 100%;
+    background-color: #91cfff;
+  }
+  .Letters_dropzone {
+    background-color: #4da0ff;
+  }
+  .Letter {
+    display: flex;
+    color: #00244d;
+  }
+  .Letter_dragovered {
+    background-color: #006fed;
+  }
+  .Letter_dragovered * {
+    pointer-events: none;
+  }
+  .Letter__Title {
+    margin: 12px;
+  }
+</style>
+</head>
+
+<body class="Page">
+<script>
+    let data = window.data || {
+    tags: {
+      '1': 'важное',
+      '2': 'личное',
+      '3': 'рабочее',
+      '4': 'Проект X',
+      '5': 'Проект Y'
+    },
+    letters: [
+      {
+        id: '1',
+        title: 'Приглашение на день рождения',
+        tags: ['1', '2']
+      },
+      {
+        id: '2',
+        title: 'Ответ на ваш комментарий',
+        tags: ['2']
+      },
+      {
+        id: '3',
+        title: 'Резюме последней встречи про X',
+        tags: ['3', '4']
+      },
+      {
+        id: '4',
+        title: 'Расчётный лист',
+        tags: ['1', '3']
+      },
+      {
+        id: '5',
+        title: 'Нужна помощь с Y',
+        tags: ['3', '5']
+      },
+      {
+        id: '6',
+        title: 'Регулярная рассылка для клиентов',
+        tags: []
+      }
+    ]
+  }
+
+  function mapAndJoin(a, f, s = '') { return a.map(f).join(s) }
+  function buildHtml(data) {
+    return `
+      <div class="Main">
+        <div class="Tags">
+          ${mapAndJoin(
+            Object.entries(data.tags),
+            ([id, title]) => buildTagHtml(id, title))}
+        </div>
+        <div class="Letters">
+          ${mapAndJoin(
+            data.letters,
+            ({ id, title, tags }) => `
+              <div class="Letter" data-letter-id="${id}">
+                <div class="Letter__Title">${title}</div>
+                ${mapAndJoin(tags, (l) => buildTagHtml(l, data.tags[l]))}
+              </div>
+            `)}
+        </div>
+      </div>
+    `
+  }
+  function buildTagHtml(id, title) {
+    return `<div class="Tag" data-tag-id="${id}">${title}</div>`
+  }
+  document.body.innerHTML = buildHtml(data);
+  window.onSolutionReady && window.onSolutionReady();
+
+  function mapAndJoin(a, f, s = '') { return a.map(f).join(s) }
+  function buildHtml(data) {
+    return `
+      <div class="Main">
+        <div class="Tags">
+          ${mapAndJoin(
+            Object.entries(data.tags),
+            ([id, title]) => buildTagHtml(id, title))}
+        </div>
+        <div class="Letters">
+          ${mapAndJoin(
+            data.letters,
+            ({ id, title, tags }) => `
+              <div class="Letter" data-letter-id="${id}">
+                <div class="Letter__Title">${title}</div>
+                ${mapAndJoin(tags, (l) => buildTagHtml(l, data.tags[l]))}
+              </div>
+            `)}
+        </div>
+      </div>
+    `
+  }
+  function buildTagHtml(id, title) {
+    return `<div class="Tag" data-tag-id="${id}">${title}</div>`
+  }
+  document.body.innerHTML = buildHtml(data);
+  window.onSolutionReady && window.onSolutionReady();
+
+  // инициализируем зоны в которых доступен перенос элементов
+  const lettersZone = document.querySelector('.Letters');
+  const tagsZone = document.querySelector('.Tags');
+
+  // получаем все тэги
+  const tags = document.querySelectorAll('.Tag');
+
+  // инициализируем переносимый элемент
+  let dragElement; 
+
+  const elementsForDrop = document.querySelectorAll('.Letter');
+
+  // назначаем всем тэгам атрибут draggable
+  tags.forEach(tag => {
+    tag.setAttribute('draggable', 'true')
+  });
+
+// если в зоне переноса начали что-либо переносить назначаем классы противополжной зоне
+tagsZone.addEventListener("dragstart", (event) => {
+    // а также присваеваем dragElement переносимый элемент
+    dragElement = event.target;
+    
+    dragElement.classList.add("Tag_dragged");
+    lettersZone.classList.add("Letters_dropzone");
+})
+// если в зоне переноса закончили что-либо переносить убираем классы с противополжной зоны
+  tagsZone.addEventListener("dragend", (event) => {
+    event.target.classList.remove("Tag_dragged");
+    lettersZone.classList.remove("Letters_dropzone");
+})
+
+// если в зоне переноса начали что-либо переносить назначаем классы противополжной зоне
+lettersZone.addEventListener("dragstart", (event) => {
+  dragElement = event.target;
+  dragElement.classList.add("Tag_dragged");
+  tagsZone.classList.add("Tags_dropzone");
+})
+// если в зоне переноса закончили что-либо переносить убираем классы с противополжной зоны
+lettersZone.addEventListener("dragend", (event) => {
+    event.target.classList.remove("Tag_dragged");
+    tagsZone.classList.remove("Tags_dropzone");
+})
+
+// отслеживаем события на всех элементах куда можно положить перносимый элемент
+elementsForDrop.forEach(letter => {
+    letter.addEventListener('dragover', (event)=>{
+      event.preventDefault();
+      
+    }, false)
+    letter.addEventListener("dragenter", (event) => {
+
+    // выделение потенциальной цели падения, когда перетаскиваемый элемент попадает в нее
+    
+    if (event.target.classList.contains("Letter")) {
+      // берем все тэги которые есть в письме
+      const letterTags = letter.querySelectorAll('.Tag');
+
+      const dataIdOfTagsArr = []
+      // собираем все ID тэгов котрые есть в письме в массив
+      letterTags.forEach(tag => {
+        dataIdOfTagsArr.push(tag.getAttribute('data-tag-id'))
+      });
+      // проверяем переносимый элемент (тэг) на наличие в письме - если его нет, то подсвичиваем письмо
+      if (!dataIdOfTagsArr.includes(dragElement.getAttribute('data-tag-id'))) {
+        event.target.classList.add("Letter_dragovered");
+      }
+    
+    // убираем дополнительную подсветку с tagsZone - если переносимый элемент не находится в tagsZone
+    tagsZone.classList.remove("Tags_dragovered");  
+  }
+  letter.addEventListener("dragleave", (event) => {
+  // сброс фона потенциальной цели падения, когда перетаскиваемый элемент покидает ее
+  if (event.target.classList.contains("Letter")) {
+    event.target.classList.remove("Letter_dragovered");
+  }
+  });
+  letter.addEventListener("drop", (event) => {
+    // выключить действие по умолчанию
+    event.preventDefault();
+    
+    // отслеживаем перемещение перетаскиваемого элемента к выбранной цели падения
+    if (event.target.classList.contains("Letter_dragovered")) {
+
+      // если переносимый элемент взят из tagsZone, то копируем его и добовляем в письмо
+      if (dragElement.parentNode.classList.contains("Tags")) {
+        const cloneDragElement = dragElement.cloneNode(true);
+        cloneDragElement.classList = 'Tag';
+        event.target.appendChild(cloneDragElement);
+      }
+      else{
+        // если переносимый элемент находился НЕ в tagsZone, то переносим его
+        event.target.appendChild(dragElement);
+      }
+    }
+    if (event.target.classList.contains("Letter")) {
+      event.target.classList.remove("Letter_dragovered");
+    }
+  });
+
+  // добавляем к tagsZone дополнительные классы если перетаскиваем элемент с lettersZone находится в tagsZone
+  tagsZone.addEventListener("dragover", (event) =>{
+    if(tagsZone.classList.contains('Tags_dropzone')){
+      event.preventDefault();
+      tagsZone.classList.add("Tags_dragovered");
+    }
+  }, false)
+  // убираем с tagsZone дополнительные классы и удаляем ператскиваемый элемент
+  tagsZone.addEventListener('drop', (event) =>{
+    event.preventDefault();
+    tagsZone.classList.remove("Tags_dropzone");
+    tagsZone.classList.remove("Tags_dragovered");
+    dragElement.remove()
+
+    // P.S. (если кто-то из Yandex будет читать)
+    // я заметил в классах ".Tag_removed", но maybe лучше всего использовать спец свойство во избежание ошибок, а не просто скрывать элемент
+  })
+});
+});
+
+
+</script>
+</body>
+</html>
